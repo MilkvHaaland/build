@@ -1,19 +1,22 @@
 #!/bin/bash -e
 
 usage() {
-    echo "====USAGE: mk-uboot.sh -b <board_name>===="
-    echo "mk-uboot.sh -b light-milkv-meles"
+    echo "====USAGE: mk-uboot.sh -b <board_name> -d <ddr_rank>===="
+    echo "mk-uboot.sh -b light-milkv-meles -d singlerank"
 }
 
-while getopts "b:h" flag; do
+while getopts "b:d:h" flag; do
     case $flag in
 	b)
 	    export BOARD="$OPTARG"
 	    ;;
+	d)
+	    export DDRRANK="$OPTARG"
+	    ;;
     esac
 done
 
-if [ ! $BOARD ]; then
+if [ ! $BOARD ] || [ ! $DDRRANK ]; then
     usage
     exit
 fi
@@ -21,7 +24,8 @@ fi
 
 case ${BOARD} in
 	"light-milkv-meles")
-		UBOOT_DEFCONFIG=light_milkv_meles_defconfig
+		UBOOT_DEFCONFIG=light_milkv_meles_${DDRRANK}_defconfig
+		export PATH="/opt/Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.6.1/bin:$PATH"
 		export ARCH=riscv
 		export CROSS_COMPILE=riscv64-unknown-linux-gnu-
 		;;
@@ -34,11 +38,13 @@ esac
 LOCALPATH=$(pwd)
 OUT=${LOCALPATH}/out
 
+[ ! -d ${OUT} ] && mkdir -p ${OUT}
+
 cd thead-u-boot
 
 make ${UBOOT_DEFCONFIG}
 make -j BUILD_TYPE=RELEASE
 
-cp u-boot-with-spl.bin ${OUT}
+cp u-boot-with-spl.bin ${OUT}/u-boot-with-spl-${DDRRANK}.bin
 
 echo -e "\e[36m U-Boot build success! \e[0m"
