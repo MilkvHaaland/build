@@ -26,7 +26,9 @@ OUT=${LOCALPATH}/out
 BUILD=${LOCALPATH}/build
 THEAD_BIN=${LOCALPATH}/thead-bin
 
-mkdir -p ${OUT}/boot ${OUT}/rootfs
+[ ! -d ${OUT}/boot ] && mkdir -p ${OUT}/boot
+[ ! -d ${OUT}/rootfs ] && mkdir -p ${OUT}/rootfs
+rm -rf ${OUT}/rootfs/lib/modules/*
 
 generate_boot_image() {
 	BOOT=${OUT}/boot.ext4
@@ -54,6 +56,7 @@ build_kernel() {
 	export number=${RELEASE_NUMBER}
 	export gid="g$(git rev-parse --short HEAD)"
 	export kv="-$number-$gid"
+	export PATH="/opt/Xuantie-900-gcc-linux-5.10.4-glibc-x86_64-V2.6.1/bin:$PATH"
 	export CROSS_COMPILE=riscv64-unknown-linux-gnu-
 	export ARCH=riscv
 
